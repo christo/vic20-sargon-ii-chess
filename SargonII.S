@@ -22,6 +22,8 @@ k_out_to_channel = $ffd2
 k_getchar =      $ffe4
 k_cursor_pos =   $fff0
 
+key_f1 =         #$85
+
          .org    $2000          ; original $a000
 
 ;--- PATCH (9 bytes) ---
@@ -404,8 +406,8 @@ LA270:   jsr     LA25C
          lda     $ae
          sta     $ac
          lda     $aa
-         beq     @LA295
          jsr     LA296
+         beq     @LA295
          jsr     LA25C
 @LA295:  rts
 
@@ -718,7 +720,7 @@ LA4B5:   lda     #$60
          bpl     @LA4C2
          rts
 
-LA4CE:   lda     #$00
+LA4CE:   lda     #$00   ; ?game init subroutine called only from end_of_patch_maybe_a90b
          tay
          sta     $57
          sta     $59
@@ -747,7 +749,7 @@ LA4CE:   lda     #$00
          sta     $57
          lda     #>la55c
          sta     $58
-         jsr     @LA518
+         jsr     @LA518     ; ? why called as subroutine from inside this subroutine
          lda     #$d8
          sta     $59
          sta     $5b
@@ -883,9 +885,9 @@ lmatein2:
          .asciiz "MATE IN 2"
 loo:     .asciiz " O-O "
 looo:    .asciiz "O-O-O"
-lpxpep:  .byte   "PXPEP"
+lpxpep:  .byte   "PXPEP"    ; en passant
 lpnbrqk: .byte   $00
-         .asciiz "PNBRQK"
+         .asciiz "PNBRQK"   ; coronation
 lstalemate:
          .asciiz "STALEMATE"
 vic_init_regs:
@@ -944,6 +946,7 @@ start:
          jsr     b_init_ram     ; 3
 ;--- END OF PATCH ---
 
+end_of_patch_maybe_a90b:
          jsr     LA4CE
          jsr     LAAAB
 LA911:   sei
@@ -996,14 +999,15 @@ LA911:   sei
          ldy     #>lwelcome_msg
          jsr     input_string
 @LA972:  jsr     k_getchar
-         cmp     #$85
+         cmp     key_f1
          beq     @LA9E4
-         ldx     $028d
+         ldx     $028d  ; keyboard shift/control flag
          cpx     #$07
          beq     @LA986
          jsr     @screen_x_offset
          jmp     @LA972
 
+; show adapted by Andy Finkel
 @LA986:  jsr     LA011
          ldx     #<ladapted
          ldy     #>ladapted
@@ -2487,6 +2491,7 @@ LB3AF:   inc     $70
          sta     $62
          rts
 
+; small routine
 @LB4A5:  clc
          bmi     @LB4B1
          adc     $61
@@ -2501,6 +2506,8 @@ LB3AF:   inc     $70
          dec     $62
 @LB4B9:  rts
 
+; small routine called several places
+; ? add 4 to $6b
 @LB4BA:  lda     #$04
 @LB4BC:  clc
 @LB4BD:  adc     $6b
