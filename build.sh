@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 f=SargonII.S
 a=2000
 
